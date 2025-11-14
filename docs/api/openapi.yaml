@@ -1,0 +1,691 @@
+openapi: 3.0.3
+info:
+  title: GST Compliance SaaS API
+  version: 0.1.0
+  description: |
+    OpenAPI skeleton for the GST compliance MVP covering invoices, IRP submission,
+    e-way bills, GSTIN verification, reporting, subscriptions, and admin management.
+servers:
+  - url: https://sandbox.api.gst-saas.local/v1
+    description: Sandbox environment
+  - url: https://api.gst-saas.local/v1
+    description: Production environment
+security:
+  - bearerAuth: []
+tags:
+  - name: Invoices
+  - name: E-Invoice
+  - name: E-Way Bills
+  - name: GSTIN
+  - name: Reports
+  - name: Tenants & Users
+  - name: Subscriptions
+  - name: Admin
+paths:
+  /tenants:
+    post:
+      tags: [Tenants & Users]
+      summary: Provision a tenant and primary admin user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantCreateRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+  /tenants/{tenantId}:
+    get:
+      tags: [Tenants & Users]
+      summary: Get tenant metadata and subscriptions
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Tenant information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+  /users:
+    post:
+      tags: [Tenants & Users]
+      summary: Invite a user to a tenant with a specific role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInviteRequest'
+      responses:
+        '201':
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /invoices:
+    get:
+      tags: [Invoices]
+      summary: List invoices filtered by date range, GSTIN, or status
+      parameters:
+        - in: query
+          name: gstin
+          schema:
+            type: string
+        - in: query
+          name: period
+          schema:
+            type: string
+            example: 2024-05
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, posted, irp_pending, irp_success, irp_failed]
+      responses:
+        '200':
+          description: Paginated invoices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceListResponse'
+    post:
+      tags: [Invoices]
+      summary: Create an invoice draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreateRequest'
+      responses:
+        '201':
+          description: Invoice created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+  /invoices/{invoiceId}:
+    get:
+      tags: [Invoices]
+      summary: Fetch invoice details
+      parameters:
+        - $ref: '#/components/parameters/InvoiceId'
+      responses:
+        '200':
+          description: Invoice detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+  /invoices/{invoiceId}/einvoice:
+    post:
+      tags: [E-Invoice]
+      summary: Submit invoice to IRP idempotently
+      parameters:
+        - $ref: '#/components/parameters/InvoiceId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                forceResync:
+                  type: boolean
+                  default: false
+      responses:
+        '202':
+          description: Submission queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IRPSubmissionResponse'
+  /invoices/{invoiceId}/irn:
+    get:
+      tags: [E-Invoice]
+      summary: Fetch IRN metadata and signed payload
+      parameters:
+        - $ref: '#/components/parameters/InvoiceId'
+      responses:
+        '200':
+          description: IRN metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IRNMetadata'
+  /eway-bills:
+    post:
+      tags: [E-Way Bills]
+      summary: Generate an e-way bill from invoice and transport details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EWayBillRequest'
+      responses:
+        '201':
+          description: E-Way bill generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EWayBill'
+    get:
+      tags: [E-Way Bills]
+      summary: List generated e-way bills
+      responses:
+        '200':
+          description: Paginated E-Way bills
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EWayBillListResponse'
+  /gstin/verify:
+    post:
+      tags: [GSTIN]
+      summary: Verify a GSTIN using sandbox or production API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gstin:
+                  type: string
+                  example: 29ABCDE1234F2Z5
+                source:
+                  type: string
+                  enum: [government, thirdParty]
+                  default: government
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GSTINVerification'
+  /reports/gstr1:
+    get:
+      tags: [Reports]
+      summary: Retrieve GSTR-1 summary for a period
+      parameters:
+        - in: query
+          name: period
+          required: true
+          schema:
+            type: string
+            example: 2024-05
+      responses:
+        '200':
+          description: GSTR-1 summary and export links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GSTR1Summary'
+  /reports/gstr3b:
+    get:
+      tags: [Reports]
+      summary: Retrieve GSTR-3B auto-draft summary
+      parameters:
+        - in: query
+          name: period
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: GSTR-3B summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GSTR3BSummary'
+  /reports/dashboard:
+    get:
+      tags: [Reports]
+      summary: Dashboard KPIs for a tenant
+      responses:
+        '200':
+          description: KPI snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+  /subscriptions/checkout:
+    post:
+      tags: [Subscriptions]
+      summary: Start a Razorpay checkout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCheckoutRequest'
+      responses:
+        '200':
+          description: Checkout session initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionCheckoutResponse'
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: Search immutable audit logs
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+        - in: query
+          name: period
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogListResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantId:
+      name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+    InvoiceId:
+      name: invoiceId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    TenantCreateRequest:
+      type: object
+      required: [name, pan, primaryGstin, admin]
+      properties:
+        name:
+          type: string
+        pan:
+          type: string
+        primaryGstin:
+          type: string
+        admin:
+          $ref: '#/components/schemas/UserInviteRequest'
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        pan:
+          type: string
+        gstins:
+          type: array
+          items:
+            $ref: '#/components/schemas/GSTRegistration'
+        subscription:
+          $ref: '#/components/schemas/SubscriptionPlan'
+    UserInviteRequest:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, accountant, viewer]
+        phone:
+          type: string
+        enable2FA:
+          type: boolean
+          default: true
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+    InvoiceCreateRequest:
+      type: object
+      required: [invoiceNumber, invoiceDate, sellerGstin, buyerGstin, items]
+      properties:
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          type: string
+          format: date
+        sellerGstin:
+          type: string
+        buyerGstin:
+          type: string
+        placeOfSupply:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+        totalTaxableValue:
+          type: number
+        totalTaxAmount:
+          type: number
+        grandTotal:
+          type: number
+        eWayBillRequired:
+          type: boolean
+          default: false
+    Invoice:
+      allOf:
+        - $ref: '#/components/schemas/InvoiceCreateRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+            irpStatus:
+              type: string
+              enum: [pending, success, failed]
+            irn:
+              type: string
+            signedPayloadUrl:
+              type: string
+    InvoiceItem:
+      type: object
+      properties:
+        description:
+          type: string
+        hsnCode:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        taxableValue:
+          type: number
+        taxRate:
+          type: number
+        taxAmount:
+          type: number
+    InvoiceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'
+    IRPSubmissionResponse:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        jobId:
+          type: string
+        status:
+          type: string
+          example: queued
+        retryCount:
+          type: integer
+    IRNMetadata:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        irn:
+          type: string
+        qrCodeSvg:
+          type: string
+          format: uri
+        signedJsonUrl:
+          type: string
+          format: uri
+        acknowledgementNumber:
+          type: string
+        acknowledgementDate:
+          type: string
+          format: date-time
+    EWayBillRequest:
+      type: object
+      required: [invoiceId, transporter, goods]
+      properties:
+        invoiceId:
+          type: string
+        transporter:
+          type: object
+          properties:
+            name:
+              type: string
+            gstin:
+              type: string
+            mode:
+              type: string
+              enum: [road, rail, air, ship]
+            vehicleNumber:
+              type: string
+        goods:
+          type: object
+          properties:
+            approxDistanceKm:
+              type: number
+            reasonCode:
+              type: string
+            documentType:
+              type: string
+              enum: [invoice, bill, challan]
+            documentNumber:
+              type: string
+            documentDate:
+              type: string
+              format: date
+    EWayBill:
+      type: object
+      properties:
+        ewbNumber:
+          type: string
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+        pdfUrl:
+          type: string
+        status:
+          type: string
+    EWayBillListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EWayBill'
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'
+    GSTINVerification:
+      type: object
+      properties:
+        gstin:
+          type: string
+        legalName:
+          type: string
+        tradeName:
+          type: string
+        registrationDate:
+          type: string
+        status:
+          type: string
+        source:
+          type: string
+    GSTR1Summary:
+      type: object
+      properties:
+        period:
+          type: string
+        totalTaxableValue:
+          type: number
+        totalTaxAmount:
+          type: number
+        sections:
+          type: array
+          items:
+            type: object
+            properties:
+              section:
+                type: string
+              records:
+                type: integer
+              jsonDownloadUrl:
+                type: string
+              csvDownloadUrl:
+                type: string
+    GSTR3BSummary:
+      type: object
+      properties:
+        period:
+          type: string
+        outwardSupplies:
+          type: object
+          additionalProperties:
+            type: number
+        itcSummary:
+          type: object
+          additionalProperties:
+            type: number
+        liability:
+          type: object
+          additionalProperties:
+            type: number
+        pdfDownloadUrl:
+          type: string
+    DashboardSummary:
+      type: object
+      properties:
+        period:
+          type: string
+        totals:
+          type: object
+          properties:
+            invoices:
+              type: integer
+            pendingIRN:
+              type: integer
+            pendingEWayBills:
+              type: integer
+            taxLiability:
+              type: number
+        alerts:
+          type: array
+          items:
+            type: string
+    SubscriptionPlan:
+      type: object
+      properties:
+        planCode:
+          type: string
+        status:
+          type: string
+        renewsOn:
+          type: string
+          format: date
+        seats:
+          type: integer
+        features:
+          type: array
+          items:
+            type: string
+    SubscriptionCheckoutRequest:
+      type: object
+      required: [planCode, seats]
+      properties:
+        planCode:
+          type: string
+        seats:
+          type: integer
+        paymentGateway:
+          type: string
+          enum: [razorpay, stripe]
+          default: razorpay
+    SubscriptionCheckoutResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        gateway:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        paymentLink:
+          type: string
+    AuditLogListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLog'
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+        actor:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        hash:
+          type: string
+        payloadDigest:
+          type: string
+    GSTRegistration:
+      type: object
+      properties:
+        gstin:
+          type: string
+        state:
+          type: string
+        registrationDate:
+          type: string
+        status:
+          type: string
+        isPrimary:
+          type: boolean
+    PageInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer

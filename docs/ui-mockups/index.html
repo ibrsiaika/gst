@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GST SaaS MVP Wireframes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .screen { display: none; }
+      .screen.active { display: block; }
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-900 min-h-screen">
+    <div class="flex flex-col md:flex-row min-h-screen">
+      <aside class="bg-slate-900 text-white w-full md:w-64 p-6 space-y-4">
+        <h1 class="text-2xl font-semibold">GST Console</h1>
+        <nav class="space-y-2" id="nav"></nav>
+        <div class="mt-10 text-xs text-slate-400">
+          <p>Tailwind utility cues are baked in for rapid React componentisation.</p>
+        </div>
+      </aside>
+      <main class="flex-1 p-6">
+        <div id="screens"></div>
+      </main>
+    </div>
+
+    <script>
+      const screens = [
+        {
+          id: 'dashboard',
+          label: 'Tenant dashboard',
+          body: `
+            <section class="screen-card">
+              <header class="flex items-center justify-between">
+                <div>
+                  <h2 class="text-xl font-semibold">Outward Supplies</h2>
+                  <p class="text-sm text-slate-500">Period: May 2024</p>
+                </div>
+                <button class="btn-primary">Download reports</button>
+              </header>
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                ${['Invoices','IRN pending','E-way pending','Tax liability'].map((label,i)=>`
+                  <div class="kpi"><p>${label}</p><h3>${[128,6,3,'₹12.3L'][i]}</h3></div>
+                `).join('')}
+              </div>
+              <div class="mt-6">
+                <h3 class="font-semibold">Alerts</h3>
+                <ul class="list-disc list-inside text-sm text-slate-600">
+                  <li>GSTR-3B filing due in 4 days</li>
+                  <li>2 invoices failed IRP validation</li>
+                </ul>
+              </div>
+            </section>`
+        },
+        {
+          id: 'invoice',
+          label: 'Invoice editor + IRP',
+          body: `
+            <section class="screen-card space-y-6">
+              <header class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold">Invoice #INV-24051</h2>
+                <div class="space-x-2">
+                  <button class="btn-outline">Validate GSTIN</button>
+                  <button class="btn-primary">Submit to IRP</button>
+                </div>
+              </header>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Seller GSTIN</label>
+                  <input class="form-input" placeholder="29ABCDE1234F2Z5" />
+                </div>
+                <div>
+                  <label class="form-label">Buyer GSTIN</label>
+                  <input class="form-input" placeholder="27XYZDE4567L1Z2" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">Line items</label>
+                  <div class="border border-dashed rounded p-4 space-y-2">
+                    <div class="flex items-center justify-between text-sm">
+                      <span>Premium hardware support</span>
+                      <span>₹50,000 • GST 18%</span>
+                    </div>
+                    <button class="btn-outline w-full">+ Add item</button>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-between">
+                <p class="text-slate-500 text-sm">Auto-calculated tax & place of supply</p>
+                <div class="text-right">
+                  <p class="text-slate-500 text-sm">Total</p>
+                  <p class="text-2xl font-semibold">₹59,000</p>
+                </div>
+              </div>
+            </section>`
+        },
+        {
+          id: 'eway',
+          label: 'E-way bill generator',
+          body: `
+            <section class="screen-card space-y-6">
+              <header class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold">Generate e-way bill</h2>
+                <button class="btn-primary">Generate</button>
+              </header>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Transporter GSTIN</label>
+                  <input class="form-input" placeholder="29TRNPR1234F2Z5" />
+                </div>
+                <div>
+                  <label class="form-label">Vehicle number</label>
+                  <input class="form-input" placeholder="KA01AB1234" />
+                </div>
+                <div>
+                  <label class="form-label">Distance (km)</label>
+                  <input class="form-input" type="number" value="320" />
+                </div>
+                <div>
+                  <label class="form-label">Document type</label>
+                  <select class="form-input">
+                    <option>Invoice</option>
+                    <option>Bill</option>
+                    <option>Challan</option>
+                  </select>
+                </div>
+              </div>
+              <div class="bg-slate-50 border rounded p-4 text-sm">
+                <p class="font-semibold">History</p>
+                <p>Last e-way bill <span class="font-mono">1110 9988 7766</span> expiring in 12h.</p>
+              </div>
+            </section>`
+        },
+        {
+          id: 'returns',
+          label: 'GSTR-1 / 3B summary',
+          body: `
+            <section class="screen-card space-y-4">
+              <header class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold">GSTR-1 (May 2024)</h2>
+                <div class="space-x-2">
+                  <button class="btn-outline">Export JSON</button>
+                  <button class="btn-outline">Export CSV</button>
+                </div>
+              </header>
+              <table class="w-full text-left text-sm">
+                <thead>
+                  <tr class="text-slate-500">
+                    <th class="py-2">Section</th>
+                    <th>Records</th>
+                    <th>Taxable</th>
+                    <th>Tax</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${[['B2B',38,'₹78.2L','₹14.0L'],['B2C Large',12,'₹9.4L','₹1.5L'],['CDNR',3,'₹1.2L','₹0.2L']].map(row=>`
+                    <tr class="border-t">
+                      <td class="py-2 font-medium">${row[0]}</td>
+                      <td>${row[1]}</td>
+                      <td>${row[2]}</td>
+                      <td>${row[3]}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div class="bg-amber-50 border border-amber-200 rounded p-4 text-sm">
+                <p class="font-semibold">Auto-filled GSTR-3B</p>
+                <p>Liability ₹12.8L • ITC eligible ₹4.5L. Locked edits once exported.</p>
+              </div>
+            </section>`
+        },
+        {
+          id: 'admin',
+          label: 'Admin & subscription',
+          body: `
+            <section class="screen-card space-y-6">
+              <header class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold">Subscription</h2>
+                <button class="btn-primary">Open Razorpay</button>
+              </header>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="border rounded p-4">
+                  <p class="text-xs text-slate-500">Current plan</p>
+                  <p class="text-lg font-semibold">Growth • ₹9,999/mo</p>
+                  <p class="text-sm">Includes unlimited e-invoices, 500 e-way credits</p>
+                </div>
+                <div class="border rounded p-4">
+                  <p class="text-xs text-slate-500">Usage</p>
+                  <p class="text-lg font-semibold">128/500 invoices</p>
+                  <p class="text-sm">Add seats & API keys below</p>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-semibold">Users</h3>
+                <ul class="divide-y text-sm">
+                  ${['Aditi (Admin)','Vikram (Accountant)','Riya (Viewer)'].map(text=>`
+                    <li class="py-2 flex items-center justify-between">
+                      <span>${text}</span>
+                      <button class="btn-outline text-xs">Manage</button>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+              <div>
+                <h3 class="font-semibold">Audit log</h3>
+                <div class="bg-slate-50 border rounded p-3 text-xs font-mono">
+                  <p>[2024-05-05 09:01] invoice.irp.submit • INV-24051 • hash: 4b5d…</p>
+                  <p>[2024-05-05 09:03] eway.create • EWB-1110 • hash: 7a2c…</p>
+                </div>
+              </div>
+            </section>`
+        }
+      ];
+
+      const nav = document.getElementById('nav');
+      const screensContainer = document.getElementById('screens');
+
+      const setActive = (id) => {
+        document.querySelectorAll('.screen').forEach((el) => {
+          el.classList.toggle('active', el.dataset.screen === id);
+        });
+        document.querySelectorAll('#nav button').forEach((button) => {
+          button.classList.toggle('bg-white', button.dataset.target === id);
+          button.classList.toggle('text-slate-900', button.dataset.target === id);
+        });
+      };
+
+      screens.forEach((screen, index) => {
+        const button = document.createElement('button');
+        button.className = 'w-full text-left px-3 py-2 rounded hover:bg-slate-700 focus:outline-none focus:ring'
+        button.dataset.target = screen.id;
+        button.innerText = screen.label;
+        button.addEventListener('click', () => setActive(screen.id));
+        nav.appendChild(button);
+
+        const section = document.createElement('div');
+        section.className = 'screen';
+        section.dataset.screen = screen.id;
+        section.innerHTML = screen.body;
+        screensContainer.appendChild(section);
+
+        if (index === 0) {
+          setActive(screen.id);
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        setActive('dashboard');
+      });
+    </script>
+
+    <template id="component-snippets">
+      <style>
+        .screen-card { @apply bg-white border border-slate-200 rounded-xl p-6 shadow-sm; }
+        .btn-primary { @apply bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700; }
+        .btn-outline { @apply border border-slate-300 text-slate-700 px-3 py-2 rounded hover:bg-slate-50; }
+        .form-label { @apply block text-xs font-semibold text-slate-500 uppercase mb-1; }
+        .form-input { @apply w-full border border-slate-300 rounded px-3 py-2 focus:ring focus:ring-indigo-300; }
+        .kpi { @apply bg-indigo-50 border border-indigo-200 rounded p-4 text-sm; }
+        .kpi h3 { @apply text-2xl font-semibold text-indigo-900; }
+      </style>
+    </template>
+  </body>
+</html>

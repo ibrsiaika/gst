@@ -1,0 +1,123 @@
+{
+  "info": {
+    "name": "GST SaaS Sandbox Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Covers internal APIs and required government sandbox endpoints."
+  },
+  "item": [
+    {
+      "name": "Internal API - Create Invoice",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/invoices",
+          "host": ["{{baseUrl}}"],
+          "path": ["invoices"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoiceNumber\": \"INV-24051\",\n  \"invoiceDate\": \"2024-05-10\",\n  \"sellerGstin\": \"29ABCDE1234F2Z5\",\n  \"buyerGstin\": \"27XYZDE4567L1Z2\",\n  \"items\": [ { \"description\": \"Premium support\", \"taxableValue\": 50000, \"taxRate\": 18 } ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Internal API - Submit IRP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/invoices/{{invoiceId}}/einvoice",
+          "host": ["{{baseUrl}}"],
+          "path": ["invoices", "{{invoiceId}}", "einvoice"]
+        }
+      }
+    },
+    {
+      "name": "Gov Sandbox - e-Invoice Generate IRN",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "https://einv-apisandbox.nic.in/einv/v1.03/Invoice/Generate",
+          "protocol": "https",
+          "host": ["einv-apisandbox", "nic", "in"],
+          "path": ["einv", "v1.03", "Invoice", "Generate"]
+        },
+        "header": [
+          { "key": "client_id", "value": "{{govClientId}}" },
+          { "key": "client_secret", "value": "{{govClientSecret}}" },
+          { "key": "Gstin", "value": "{{primaryGstin}}" },
+          { "key": "user_name", "value": "{{govUser}}" },
+          { "key": "password", "value": "{{govPassword}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<IRP JSON payload sample>"
+        }
+      }
+    },
+    {
+      "name": "Gov Sandbox - Get GSTIN Details",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "https://einv-apisandbox.nic.in/version1.03/get-gstin-details?gstin={{gstin}}",
+          "protocol": "https",
+          "host": ["einv-apisandbox", "nic", "in"],
+          "path": ["version1.03", "get-gstin-details"],
+          "query": [
+            { "key": "gstin", "value": "{{gstin}}" }
+          ]
+        },
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{govToken}}" }
+        ]
+      }
+    },
+    {
+      "name": "Gov Sandbox - Generate E-Way Bill",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "https://preprod-api.ewaybillgst.gov.in/ewaybillapi/EwayBillV1.03/Generate",
+          "protocol": "https",
+          "host": ["preprod-api", "ewaybillgst", "gov", "in"],
+          "path": ["ewaybillapi", "EwayBillV1.03", "Generate"]
+        },
+        "header": [
+          { "key": "client_id", "value": "{{ewayClientId}}" },
+          { "key": "client_secret", "value": "{{ewayClientSecret}}" },
+          { "key": "gstin", "value": "{{primaryGstin}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<E-way Bill payload sample>"
+        }
+      }
+    },
+    {
+      "name": "Internal API - Dashboard Summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/reports/dashboard",
+          "host": ["{{baseUrl}}"],
+          "path": ["reports", "dashboard"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://sandbox.api.gst-saas.local/v1" },
+    { "key": "token", "value": "" },
+    { "key": "invoiceId", "value": "" },
+    { "key": "primaryGstin", "value": "29ABCDE1234F2Z5" }
+  ]
+}
