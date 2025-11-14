@@ -2,15 +2,16 @@
   "info": {
     "name": "GST SaaS Sandbox Collection",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Covers internal APIs and required government sandbox endpoints."
+    "description": "Comprehensive collection covering internal APIs and Indian Government GST sandbox endpoints (IRP, e-Way Bill, GSTIN verification) with realistic payloads."
   },
   "item": [
     {
-      "name": "Internal API - Create Invoice",
+      "name": "Internal API - Create B2B Invoice",
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" }
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "url": {
           "raw": "{{baseUrl}}/invoices",
@@ -19,7 +20,26 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"invoiceNumber\": \"INV-24051\",\n  \"invoiceDate\": \"2024-05-10\",\n  \"sellerGstin\": \"29ABCDE1234F2Z5\",\n  \"buyerGstin\": \"27XYZDE4567L1Z2\",\n  \"items\": [ { \"description\": \"Premium support\", \"taxableValue\": 50000, \"taxRate\": 18 } ]\n}"
+          "raw": "{\n  \"invoiceNumber\": \"INV/2024-25/00051\",\n  \"invoiceDate\": \"2024-05-10\",\n  \"invoiceType\": \"B2B\",\n  \"documentType\": \"INV\",\n  \"sellerGstin\": \"29AABCT1332L1Z5\",\n  \"sellerLegalName\": \"ABC Technologies Pvt Ltd\",\n  \"sellerTradeName\": \"ABC Tech\",\n  \"sellerAddress\": {\n    \"building\": \"Tech Park Building\",\n    \"street\": \"Outer Ring Road\",\n    \"locality\": \"Bellandur\",\n    \"city\": \"Bangalore\",\n    \"state\": \"Karnataka\",\n    \"stateCode\": \"29\",\n    \"pincode\": \"560103\"\n  },\n  \"buyerGstin\": \"27AAHCS2781A1ZP\",\n  \"buyerLegalName\": \"XYZ Enterprises\",\n  \"buyerAddress\": {\n    \"building\": \"Business Center\",\n    \"street\": \"MG Road\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"stateCode\": \"27\",\n    \"pincode\": \"400001\"\n  },\n  \"placeOfSupply\": \"27\",\n  \"supplyType\": \"INTER_STATE\",\n  \"reverseCharge\": false,\n  \"items\": [\n    {\n      \"description\": \"Software Development Services\",\n      \"hsnCode\": \"998314\",\n      \"quantity\": 1,\n      \"unit\": \"NOS\",\n      \"unitPrice\": 100000,\n      \"discount\": 0,\n      \"taxableValue\": 100000,\n      \"taxRate\": 18,\n      \"igstAmount\": 18000,\n      \"cgstAmount\": 0,\n      \"sgstAmount\": 0,\n      \"cessAmount\": 0,\n      \"taxAmount\": 18000,\n      \"itemTotal\": 118000\n    }\n  ],\n  \"totalTaxableValue\": 100000,\n  \"totalIgst\": 18000,\n  \"totalCgst\": 0,\n  \"totalSgst\": 0,\n  \"totalCess\": 0,\n  \"totalTaxAmount\": 18000,\n  \"grandTotal\": 118000,\n  \"eWayBillRequired\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Internal API - Create Export Invoice",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/invoices",
+          "host": ["{{baseUrl}}"],
+          "path": ["invoices"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoiceNumber\": \"EXP/2024-25/00012\",\n  \"invoiceDate\": \"2024-05-15\",\n  \"invoiceType\": \"EXPORT\",\n  \"documentType\": \"INV\",\n  \"sellerGstin\": \"29AABCT1332L1Z5\",\n  \"sellerLegalName\": \"ABC Technologies Pvt Ltd\",\n  \"buyerGstin\": \"URP\",\n  \"buyerLegalName\": \"Global Tech Inc\",\n  \"buyerAddress\": {\n    \"street\": \"123 Silicon Valley\",\n    \"city\": \"San Francisco\",\n    \"state\": \"California\",\n    \"stateCode\": \"96\",\n    \"pincode\": \"999999\"\n  },\n  \"placeOfSupply\": \"96\",\n  \"supplyType\": \"INTER_STATE\",\n  \"items\": [\n    {\n      \"description\": \"IT Consulting Services\",\n      \"hsnCode\": \"998314\",\n      \"quantity\": 40,\n      \"unit\": \"HRS\",\n      \"unitPrice\": 8325,\n      \"taxableValue\": 333000,\n      \"taxRate\": 0,\n      \"igstAmount\": 0,\n      \"taxAmount\": 0,\n      \"itemTotal\": 333000\n    }\n  ],\n  \"totalTaxableValue\": 333000,\n  \"totalIgst\": 0,\n  \"totalTaxAmount\": 0,\n  \"grandTotal\": 333000,\n  \"exportDetails\": {\n    \"shippingBillNumber\": \"SB12345\",\n    \"shippingBillDate\": \"2024-05-16\",\n    \"portCode\": \"INBLR4\",\n    \"foreignCurrency\": \"USD\",\n    \"conversionRate\": 83.25\n  }\n}"
         }
       }
     },
@@ -52,11 +72,12 @@
           { "key": "client_secret", "value": "{{govClientSecret}}" },
           { "key": "Gstin", "value": "{{primaryGstin}}" },
           { "key": "user_name", "value": "{{govUser}}" },
-          { "key": "password", "value": "{{govPassword}}" }
+          { "key": "password", "value": "{{govPassword}}" },
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "<IRP JSON payload sample>"
+          "raw": "{\n  \"Version\": \"1.1\",\n  \"TranDtls\": {\n    \"TaxSch\": \"GST\",\n    \"SupTyp\": \"B2B\",\n    \"RegRev\": \"N\",\n    \"IgstOnIntra\": \"N\"\n  },\n  \"DocDtls\": {\n    \"Typ\": \"INV\",\n    \"No\": \"INV/2024-25/00051\",\n    \"Dt\": \"10/05/2024\"\n  },\n  \"SellerDtls\": {\n    \"Gstin\": \"29AABCT1332L1Z5\",\n    \"LglNm\": \"ABC Technologies Pvt Ltd\",\n    \"TrdNm\": \"ABC Tech\",\n    \"Addr1\": \"Tech Park Building, Outer Ring Road\",\n    \"Addr2\": \"Bellandur\",\n    \"Loc\": \"Bangalore\",\n    \"Pin\": 560103,\n    \"Stcd\": \"29\"\n  },\n  \"BuyerDtls\": {\n    \"Gstin\": \"27AAHCS2781A1ZP\",\n    \"LglNm\": \"XYZ Enterprises\",\n    \"Addr1\": \"Business Center, MG Road\",\n    \"Loc\": \"Mumbai\",\n    \"Pin\": 400001,\n    \"Stcd\": \"27\",\n    \"Pos\": \"27\"\n  },\n  \"ItemList\": [\n    {\n      \"SlNo\": \"1\",\n      \"PrdDesc\": \"Software Development Services\",\n      \"IsServc\": \"Y\",\n      \"HsnCd\": \"998314\",\n      \"Qty\": 1,\n      \"Unit\": \"NOS\",\n      \"UnitPrice\": 100000,\n      \"TotAmt\": 100000,\n      \"Discount\": 0,\n      \"AssAmt\": 100000,\n      \"GstRt\": 18,\n      \"IgstAmt\": 18000,\n      \"CgstAmt\": 0,\n      \"SgstAmt\": 0,\n      \"CesRt\": 0,\n      \"CesAmt\": 0,\n      \"CesNonAdvlAmt\": 0,\n      \"StateCesRt\": 0,\n      \"StateCesAmt\": 0,\n      \"StateCesNonAdvlAmt\": 0,\n      \"OthChrg\": 0,\n      \"TotItemVal\": 118000\n    }\n  ],\n  \"ValDtls\": {\n    \"AssVal\": 100000,\n    \"IgstVal\": 18000,\n    \"CgstVal\": 0,\n    \"SgstVal\": 0,\n    \"CesVal\": 0,\n    \"Discount\": 0,\n    \"OthChrg\": 0,\n    \"RndOffAmt\": 0,\n    \"TotInvVal\": 118000\n  }\n}"
         }
       }
     },
@@ -89,35 +110,4 @@
           "path": ["ewaybillapi", "EwayBillV1.03", "Generate"]
         },
         "header": [
-          { "key": "client_id", "value": "{{ewayClientId}}" },
-          { "key": "client_secret", "value": "{{ewayClientSecret}}" },
-          { "key": "gstin", "value": "{{primaryGstin}}" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "<E-way Bill payload sample>"
-        }
-      }
-    },
-    {
-      "name": "Internal API - Dashboard Summary",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/reports/dashboard",
-          "host": ["{{baseUrl}}"],
-          "path": ["reports", "dashboard"]
-        }
-      }
-    }
-  ],
-  "variable": [
-    { "key": "baseUrl", "value": "https://sandbox.api.gst-saas.local/v1" },
-    { "key": "token", "value": "" },
-    { "key": "invoiceId", "value": "" },
-    { "key": "primaryGstin", "value": "29ABCDE1234F2Z5" }
-  ]
-}
+          { "key": "client_id", "value": "{{ewayClientId}}" },\n          { \"key\": \"client_secret\", \"value\": \"{{ewayClientSecret}}\" },\n          { \"key\": \"gstin\", \"value\": \"{{primaryGstin}}\" },\n          { \"key\": \"Content-Type\", \"value\": \"application/json\" }\n        ],\n        \"body\": {\n          \"mode\": \"raw\",\n          \"raw\": \"{\\n  \\\"userGstin\\\": \\\"29AABCT1332L1Z5\\\",\\n  \\\"supplyType\\\": \\\"O\\\",\\n  \\\"subSupplyType\\\": \\\"1\\\",\\n  \\\"subSupplyDesc\\\": \\\"\\\",\\n  \\\"docType\\\": \\\"INV\\\",\\n  \\\"docNo\\\": \\\"INV/2024-25/00051\\\",\\n  \\\"docDate\\\": \\\"10/05/2024\\\",\\n  \\\"fromGstin\\\": \\\"29AABCT1332L1Z5\\\",\\n  \\\"fromTrdName\\\": \\\"ABC Technologies Pvt Ltd\\\",\\n  \\\"fromAddr1\\\": \\\"Tech Park Building\\\",\\n  \\\"fromAddr2\\\": \\\"Outer Ring Road, Bellandur\\\",\\n  \\\"fromPlace\\\": \\\"Bangalore\\\",\\n  \\\"fromPincode\\\": 560103,\\n  \\\"fromStateCode\\\": 29,\\n  \\\"actFromStateCode\\\": 29,\\n  \\\"toGstin\\\": \\\"27AAHCS2781A1ZP\\\",\\n  \\\"toTrdName\\\": \\\"XYZ Enterprises\\\",\\n  \\\"toAddr1\\\": \\\"Business Center\\\",\\n  \\\"toAddr2\\\": \\\"MG Road\\\",\\n  \\\"toPlace\\\": \\\"Mumbai\\\",\\n  \\\"toPincode\\\": 400001,\\n  \\\"toStateCode\\\": 27,\\n  \\\"actToStateCode\\\": 27,\\n  \\\"totalValue\\\": 118000,\\n  \\\"cgstValue\\\": 0,\\n  \\\"sgstValue\\\": 0,\\n  \\\"igstValue\\\": 18000,\\n  \\\"cessValue\\\": 0,\\n  \\\"totInvValue\\\": 118000,\\n  \\\"transporterId\\\": \\\"29AAACB1234D1Z5\\\",\\n  \\\"transporterName\\\": \\\"Blue Dart Express Ltd\\\",\\n  \\\"transDocNo\\\": \\\"LR12345\\\",\\n  \\\"transMode\\\": \\\"1\\\",\\n  \\\"transDistance\\\": 450,\\n  \\\"transDocDate\\\": \\\"10/05/2024\\\",\\n  \\\"vehicleNo\\\": \\\"KA01AB1234\\\",\\n  \\\"vehicleType\\\": \\\"R\\\",\\n  \\\"itemList\\\": [\\n    {\\n      \\\"productName\\\": \\\"Software Development Services\\\",\\n      \\\"productDesc\\\": \\\"IT Services\\\",\\n      \\\"hsnCode\\\": 998314,\\n      \\\"quantity\\\": 1,\\n      \\\"qtyUnit\\\": \\\"NOS\\\",\\n      \\\"cgstRate\\\": 0,\\n      \\\"sgstRate\\\": 0,\\n      \\\"igstRate\\\": 18,\\n      \\\"cessRate\\\": 0,\\n      \\\"cessNonadvol\\\": 0,\\n      \\\"taxableAmount\\\": 100000\\n    }\\n  ]\\n}\"\n        }\n      }\n    },\n    {\n      \"name\": \"Internal API - Generate E-Way Bill\",\n      \"request\": {\n        \"method\": \"POST\",\n        \"header\": [\n          { \"key\": \"Authorization\", \"value\": \"Bearer {{token}}\" },\n          { \"key\": \"Content-Type\", \"value\": \"application/json\" }\n        ],\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/eway-bills\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"eway-bills\"]\n        },\n        \"body\": {\n          \"mode\": \"raw\",\n          \"raw\": \"{\\n  \\\"invoiceId\\\": \\\"{{invoiceId}}\\\",\\n  \\\"transporter\\\": {\\n    \\\"name\\\": \\\"Blue Dart Express Ltd\\\",\\n    \\\"transporterId\\\": \\\"29AAACB1234D1Z5\\\",\\n    \\\"mode\\\": \\\"ROAD\\\",\\n    \\\"vehicleNumber\\\": \\\"KA01AB1234\\\",\\n    \\\"vehicleType\\\": \\\"REGULAR\\\",\\n    \\\"documentNumber\\\": \\\"LR12345\\\",\\n    \\\"documentDate\\\": \\\"2024-05-10\\\"\\n  },\\n  \\\"goods\\\": {\\n    \\\"hsnCode\\\": \\\"998314\\\",\\n    \\\"approxDistanceKm\\\": 450,\\n    \\\"reasonCode\\\": \\\"1\\\",\\n    \\\"documentType\\\": \\\"INV\\\",\\n    \\\"documentNumber\\\": \\\"INV/2024-25/00051\\\",\\n    \\\"documentDate\\\": \\\"2024-05-10\\\"\\n  }\\n}\"\n        }\n      }\n    },\n    {\n      \"name\": \"Internal API - GSTR-1 Summary\",\n      \"request\": {\n        \"method\": \"GET\",\n        \"header\": [\n          { \"key\": \"Authorization\", \"value\": \"Bearer {{token}}\" }\n        ],\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/reports/gstr1?period=052024&gstin={{primaryGstin}}\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"reports\", \"gstr1\"],\n          \"query\": [\n            { \"key\": \"period\", \"value\": \"052024\" },\n            { \"key\": \"gstin\", \"value\": \"{{primaryGstin}}\" }\n          ]\n        }\n      }\n    },\n    {\n      \"name\": \"Internal API - GSTR-3B Summary\",\n      \"request\": {\n        \"method\": \"GET\",\n        \"header\": [\n          { \"key\": \"Authorization\", \"value\": \"Bearer {{token}}\" }\n        ],\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/reports/gstr3b?period=052024&gstin={{primaryGstin}}\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"reports\", \"gstr3b\"],\n          \"query\": [\n            { \"key\": \"period\", \"value\": \"052024\" },\n            { \"key\": \"gstin\", \"value\": \"{{primaryGstin}}\" }\n          ]\n        }\n      }\n    },\n    {\n      \"name\": \"Internal API - Dashboard Summary\",\n      \"request\": {\n        \"method\": \"GET\",\n        \"header\": [\n          { \"key\": \"Authorization\", \"value\": \"Bearer {{token}}\" }\n        ],\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/reports/dashboard?period=052024\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"reports\", \"dashboard\"],\n          \"query\": [\n            { \"key\": \"period\", \"value\": \"052024\" }\n          ]\n        }\n      }\n    }\n  ],\n  \"variable\": [\n    { \"key\": \"baseUrl\", \"value\": \"https://sandbox.api.gst-saas.local/v1\", \"type\": \"string\" },\n    { \"key\": \"token\", \"value\": \"\", \"type\": \"string\" },\n    { \"key\": \"invoiceId\", \"value\": \"\", \"type\": \"string\" },\n    { \"key\": \"gstin\", \"value\": \"29AABCT1332L1Z5\", \"type\": \"string\" },\n    { \"key\": \"primaryGstin\", \"value\": \"29AABCT1332L1Z5\", \"type\": \"string\" },\n    { \"key\": \"govClientId\", \"value\": \"\", \"type\": \"string\", \"description\": \"IRP sandbox client ID\" },\n    { \"key\": \"govClientSecret\", \"value\": \"\", \"type\": \"string\", \"description\": \"IRP sandbox client secret\" },\n    { \"key\": \"govUser\", \"value\": \"\", \"type\": \"string\" },\n    { \"key\": \"govPassword\", \"value\": \"\", \"type\": \"string\" },\n    { \"key\": \"govToken\", \"value\": \"\", \"type\": \"string\" },\n    { \"key\": \"ewayClientId\", \"value\": \"\", \"type\": \"string\", \"description\": \"E-Way Bill sandbox client ID\" },\n    { \"key\": \"ewayClientSecret\", \"value\": \"\", \"type\": \"string\", \"description\": \"E-Way Bill sandbox client secret\" }\n  ]\n}
