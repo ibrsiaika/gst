@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
+import { IrpModule } from './modules/irp/irp.module';
 import { Tenant } from './entities/tenant.entity';
 import { GstRegistration } from './entities/gst-registration.entity';
 import { User } from './entities/user.entity';
@@ -33,6 +34,7 @@ import { InvoiceItem } from './entities/invoice-item.entity';
     }),
     TenantsModule,
     InvoicesModule,
+    IrpModule,
   ],
   controllers: [AppController],
   providers: [AppService],
